@@ -1,0 +1,54 @@
+oci_connection = {
+  tenancy_ocid     = "ocid1.tenancy.oc1..xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  user_ocid        = "ocid1.user.oc1..xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  fingerprint      = "xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx"
+  private_key_path = "~/.oci/key-private.pem"
+  region           = "eu-frankfurt-1"
+}
+
+general = {
+  compartment_name    = "infrastructure"
+  bucket_name         = "backups"
+  private_ip_group    = "172.16"
+  private_subnet_size = 24
+}
+
+vm = {
+  shape      = "VM.Standard.A1.Flex"
+  cpus       = 4
+  mem_size   = 24
+  disk_size  = 200
+  image_name = "Debian Sid Daily (genericcloud-arm64)"
+  ssh_public_keys = [
+    "ssh-rsa ...",
+    "ssh-ed25519 ..."
+  ]
+  os = {
+    hostname       = "infravm"
+    debian_version = "bookworm"
+    username       = "infra"
+
+    # optional - sets plain text password for the user
+    password = "s0m3-r4nd0m"
+
+    # optional - prevents DNS leaks
+    force_dns = ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"]
+
+    # optional - automatically brings up Wireguard interfaces
+    wg_config = {
+      "wg0" = <<EOF
+[Interface]
+PrivateKey = xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Address = 1.2.3.4
+DNS = 1.2.3.4
+MTU = 1420
+
+[Peer]
+PublicKey = yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+AllowedIPs = 1.2.3.4
+PersistentKeepalive = 25
+Endpoint = 1.2.3.4:2408
+EOF
+    }
+  }
+}
