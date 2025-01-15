@@ -281,3 +281,22 @@ resource "oci_core_instance" "infra_vm" {
     ignore_changes = [metadata]
   }
 }
+
+resource "oci_core_volume_backup_policy" "daily" {
+  compartment_id = oci_identity_compartment.identity.id
+  display_name   = "Daily Backup"
+
+  schedules {
+    backup_type       = "INCREMENTAL"
+    period            = "ONE_DAY"
+    retention_seconds = 4 * 24 * 60 * 60 # 4 days to stay in free tier
+    offset_type       = "STRUCTURED"
+    hour_of_day       = 2
+    time_zone         = "UTC"
+  }
+}
+
+resource "oci_core_volume_backup_policy_assignment" "infra_vm" {
+  asset_id  = oci_core_instance.infra_vm.boot_volume_id
+  policy_id = oci_core_volume_backup_policy.daily.id
+}
