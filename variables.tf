@@ -19,6 +19,7 @@ variable "general" {
 
 variable "vm" {
   type = object({
+    name                = string
     availability_domain = optional(number, 1)
     shape               = optional(string, "VM.Standard.A1.Flex")
     cpus                = optional(number, 4)
@@ -34,5 +35,7 @@ variable "vm" {
       force_dns      = optional(list(string), [])
       wg_config      = optional(map(string), {})
     })
+    daily_backups  = optional(number, 3)
+    weekly_backups = optional(number, 2)
   })
 }

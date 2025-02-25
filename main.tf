@@ -2,7 +2,7 @@ terraform {
   required_providers {
     oci = {
       source  = "oracle/oci"
-      version = "6.21.0"
+      version = "6.27.0"
     }
   }
 
@@ -243,7 +243,7 @@ data "oci_identity_availability_domain" "ad" {
 
 resource "oci_core_instance" "infra_vm" {
   compartment_id       = oci_identity_compartment.identity.id
-  display_name         = "Infrastructure VM"
+  display_name         = "${var.vm.name} VM"
   availability_domain  = data.oci_identity_availability_domain.ad.name
   preserve_boot_volume = false
 
@@ -282,21 +282,30 @@ resource "oci_core_instance" "infra_vm" {
   }
 }
 
-resource "oci_core_volume_backup_policy" "daily" {
+resource "oci_core_volume_backup_policy" "backup" {
   compartment_id = oci_identity_compartment.identity.id
-  display_name   = "Daily Backup"
+  display_name   = "${var.vm.name} Backups"
 
   schedules {
     backup_type       = "INCREMENTAL"
     period            = "ONE_DAY"
-    retention_seconds = 4 * 24 * 60 * 60 # 4 days to stay in free tier
+    retention_seconds = var.vm.daily_backups * 24 * 60 * 60
     offset_type       = "STRUCTURED"
-    hour_of_day       = 2
+    hour_of_day       = 1
+    time_zone         = "UTC"
+  }
+  schedules {
+    backup_type       = "FULL"
+    period            = "ONE_WEEK"
+    retention_seconds = var.vm.weekly_backups * 7 * 24 * 60 * 60
+    offset_type       = "STRUCTURED"
+    day_of_week       = "SUNDAY"
+    hour_of_day       = 4
     time_zone         = "UTC"
   }
 }
 
-resource "oci_core_volume_backup_policy_assignment" "infra_vm" {
+resource "oci_core_volume_backup_policy_assignment" "backup" {
   asset_id  = oci_core_instance.infra_vm.boot_volume_id
-  policy_id = oci_core_volume_backup_policy.daily.id
+  policy_id = oci_core_volume_backup_policy.backup.id
 }
