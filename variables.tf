@@ -12,8 +12,8 @@ variable "general" {
   type = object({
     compartment_name    = optional(string, "infra")
     bucket_name         = optional(string, "bucket")
-    private_ip_group    = optional(string, "172.16")
-    private_subnet_size = optional(number, 24)
+    main_network_cidr   = optional(string, "172.16.0.0/16")
+    private_subnet_cidr = optional(string, "172.16.0.0/24")
   })
 }
 
@@ -26,6 +26,7 @@ variable "vm" {
     mem_size            = optional(number, 24)
     disk_size           = optional(number, 200)
     image_name          = string
+    private_ip          = optional(string, "172.16.0.2")
     ssh_public_keys     = list(string)
     os = object({
       hostname       = string

@@ -28,7 +28,7 @@ resource "oci_identity_compartment" "identity" {
 resource "oci_core_vcn" "main" {
   compartment_id = oci_identity_compartment.identity.id
   display_name   = "Main VCN"
-  cidr_blocks    = ["${var.general.private_ip_group}.0.0/16"]
+  cidr_blocks    = [var.general.main_network_cidr]
   dns_label      = "mainvcn"
 }
 
@@ -100,7 +100,7 @@ resource "oci_core_subnet" "private" {
   display_name   = "Private Subnet"
   vcn_id         = oci_core_vcn.main.id
   route_table_id = oci_core_route_table.private.id
-  cidr_block     = "${var.general.private_ip_group}.0.0/${var.general.private_subnet_size}"
+  cidr_block     = var.general.private_subnet_cidr
   dns_label      = "prvsubnet"
 
   prohibit_internet_ingress  = true
@@ -266,7 +266,7 @@ resource "oci_core_instance" "infra_vm" {
     subnet_id        = oci_core_subnet.private.id
     display_name     = "vnic0"
     hostname_label   = var.vm.os.hostname
-    private_ip       = "${var.general.private_ip_group}.0.2"
+    private_ip       = var.vm.private_ip
     assign_public_ip = false
   }
   agent_config {
